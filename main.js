@@ -49,11 +49,11 @@ viewer.camera.setView({
     },
 });
 
-getData('/tottori/toukousen_pl.geojson', [0, 20, 90, 100], 'polyline');
-getData('/tottori/romou_pl.geojson', [0, 200, 90, 100], 'polyline');
-getData('/tottori/hinoki_fix.geojson', [0, 250, 0, 100], '3d');
-getData('/tottori/sugi_fix.geojson', [0, 100, 0, 100], '3d');
-getData('/tottori/matsu_fix.geojson', [0, 200, 90, 100], '3d');
+// getData('/tottori/toukousen_pl.geojson', [0, 20, 90, 100], 'polyline');
+// getData('/tottori/romou_pl.geojson', [0, 200, 90, 100], 'polyline');
+// getData('/tottori/hinoki_fix.geojson', [0, 250, 0, 100], '3d');
+// getData('/tottori/sugi_fix.geojson', [0, 100, 0, 100], '3d');
+// getData('/tottori/matsu_fix.geojson', [0, 200, 90, 100], '3d');
 
 var blackMarble = viewer.scene.imageryLayers.addImageryProvider(
     new Cesium.SingleTileImageryProvider({
@@ -140,9 +140,9 @@ function set3dData(data, rgba) {
         czmlData.push(miki3D);
     });
     const dataSourcePromise = Cesium.CzmlDataSource.load(czmlData);
-    viewer.dataSources.add(dataSourcePromise, {
-    });
+    viewer.dataSources.add(dataSourcePromise, {});
     viewer.zoomTo(dataSourcePromise);
+    // console.log(czmlData);
 }
 
 function setPolylineData(data, rgba) {
@@ -183,7 +183,10 @@ function setPolylineData(data, rgba) {
         czmlData2.push(czml2);
     });
     const dataSourcePromise2 = Cesium.CzmlDataSource.load(czmlData2);
-    viewer.dataSources.add(dataSourcePromise2, {
-    });
+    viewer.dataSources.add(dataSourcePromise2, {});
     viewer.zoomTo(dataSourcePromise2);
 }
+
+viewer.dataSources.add(Cesium.CzmlDataSource.load('/czml/pretty.json'), {});
+viewer.dataSources.add(Cesium.CzmlDataSource.load('/czml/mastu.json'), {});
+viewer.zoomTo(viewer.dataSources.add(Cesium.CzmlDataSource.load('/czml/hinoki.json'), {}));
