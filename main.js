@@ -41,7 +41,7 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
 
 // 初期表示時のカメラ位置
 viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(134.363874, 35.462414, 6000), // 初期位置:
+    destination: Cesium.Cartesian3.fromDegrees(134.363874, 35.448414, 1200), // 初期位置:
     orientation: {
         heading: 0, // 水平方向の回転度（ラジアン）
         pitch: -0.5, // 垂直方向の回転度（ラジアン）
@@ -57,7 +57,7 @@ viewer.camera.setView({
 
 var blackMarble = viewer.scene.imageryLayers.addImageryProvider(
     new Cesium.SingleTileImageryProvider({
-        url: '/tottori/bitikei.png',
+        url: 'bitikei.png',
         rectangle: Cesium.Rectangle.fromDegrees(134.3553679687581734, 35.4591743626733731, 134.3774096939206402, 35.4727003192825734),
     }),
 );
@@ -187,6 +187,6 @@ function setPolylineData(data, rgba) {
     viewer.zoomTo(dataSourcePromise2);
 }
 
-viewer.dataSources.add(Cesium.CzmlDataSource.load('/czml/pretty.json'), {});
-viewer.dataSources.add(Cesium.CzmlDataSource.load('/czml/mastu.json'), {});
-viewer.zoomTo(viewer.dataSources.add(Cesium.CzmlDataSource.load('/czml/hinoki.json'), {}));
+viewer.dataSources.add(Cesium.CzmlDataSource.load('sugi.json'), {});
+viewer.dataSources.add(Cesium.CzmlDataSource.load('mastu.json'), {});
+viewer.dataSources.add(Cesium.CzmlDataSource.load('hinoki.json'), {});
