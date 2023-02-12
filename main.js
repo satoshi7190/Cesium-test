@@ -13,6 +13,7 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     vrButton: false,
     geocoder: false,
     sceneModePicker: false,
+    baseLayerPicker: false,
     navigationHelpButton: false,
     infoBox: false,
     selectionIndicator: false,
@@ -20,13 +21,21 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     shouldAnimate: false,
     requestRenderMode: true,
     maximumRenderTimeChange: Infinity,
+    fullscreenButton: false,
+    sceneModePicker: false,
+    mapMode2D: Cesium.MapMode2D.ROTATE,
+    navigationInstructionsInitiallyVisible: false,
 });
 
 viewer.scene.debugShowFramesPerSecond = true;
-
-// Hides the stars
 viewer.scene.skyBox.show = false;
-// Explicitly render a new frame
+viewer.scene.sun.show = false;
+viewer.scene.moon.show = false;
+viewer.scene.skyAtmosphere.show = false;
+viewer.scene.globe.enableLighting = false;
+viewer.scene.globe.baseColor = Cesium.Color.BLACK;
+viewer.scene.globe.showWaterEffect = false;
+viewer.scene.fog.enabled = false;
 
 // 初期表示位置
 viewer.camera.setView({
