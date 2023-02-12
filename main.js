@@ -13,7 +13,6 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     vrButton: false,
     geocoder: false,
     sceneModePicker: false,
-    baseLayerPicker: false,
     navigationHelpButton: false,
     infoBox: false,
     selectionIndicator: false,
@@ -126,7 +125,6 @@ const set3dData = async (url, trunkColor, trunkoutlineColor) => {
                 topRadius: dbh / 100,
                 bottomRadius: dbh / 100,
                 slices: 6,
-                outlineWidth: 6,
                 material: {
                     solidColor: {
                         color: {
@@ -148,10 +146,11 @@ const set3dData = async (url, trunkColor, trunkoutlineColor) => {
                 topRadius: 0,
                 bottomRadius: canopyProjectedArea / Math.PI,
                 slices: 6,
-                numberOfVerticalLines: 6,
+                numberOfVerticalLines: 3,
                 outline: true,
+                outlineWidth: 0.5,
                 outlineColor: {
-                    rgba: [255, 255, 255, 120],
+                    rgba: [255, 255, 255, 250],
                 },
 
                 material: {
@@ -173,9 +172,9 @@ const set3dData = async (url, trunkColor, trunkoutlineColor) => {
     viewer.zoomTo(dataSourcePromise);
 };
 
-set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 100, 0, 200], [255, 255, 255, 100]);
-set3dData('sugi_fix.geojson', [0, 200, 40, 200], [255, 255, 255, 100]);
-set3dData('matsu_fix.geojson', [20, 200, 160, 200], [255, 255, 255, 100]);
+set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250], [255, 255, 255, 100]);
+set3dData('sugi_fix.geojson', [0, 100, 0, 250], [255, 255, 255, 100]);
+set3dData('matsu_fix.geojson', [20, 200, 160, 250], [255, 255, 255, 100]);
 
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('sugi.json'), {});
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('mastu.json'), {});
