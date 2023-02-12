@@ -165,8 +165,8 @@ const set3dData = async (url, trunkColor, trunkoutlineColor) => {
 };
 
 set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 100, 0, 200], [255, 255, 255, 100]);
-set3dData('/tottori/sugi_fix.geojson', [0, 200, 40, 200], [255, 255, 255, 100]);
-set3dData('/tottori/matsu_fix.geojson', [20, 200, 160, 200], [255, 255, 255, 100]);
+set3dData('sugi_fix.geojson', [0, 200, 40, 200], [255, 255, 255, 100]);
+set3dData('matsu_fix.geojson', [20, 200, 160, 200], [255, 255, 255, 100]);
 
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('sugi.json'), {});
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('mastu.json'), {});
