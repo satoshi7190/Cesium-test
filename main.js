@@ -14,7 +14,10 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     geocoder: false,
     sceneModePicker: false,
     navigationHelpButton: false,
-
+    infoBox: false,
+    selectionIndicator: false,
+    shadows: false,
+    shouldAnimate: false,
     requestRenderMode: true,
     maximumRenderTimeChange: Infinity,
 });
