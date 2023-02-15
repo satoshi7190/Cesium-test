@@ -2,6 +2,9 @@
 Cesium.Ion.defaultAccessToken =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiYjdmYzk5Ni1lZWM5LTQzMGItOTJlMi1jMmE4MTEyODUxM2EiLCJpZCI6OTI1MzgsImlhdCI6MTY1MTc5NTA2MX0.749U4AStD0Dc3dmI0taUBvaQc5Ohpf32FYfskjIl4pM';
 
+Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
+Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+// Cesium.Camera.DEFAULT_OFFSET = Cesium.HeadingPitchRange(0, -5, 9);
 // Viewerを表示、地形の読み込み、不要なボタン等はオフに
 const viewer = new Cesium.Viewer('cesiumContainer', {
     // 地形の読み込み
@@ -22,28 +25,22 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     maximumRenderTimeChange: Infinity,
     fullscreenButton: false,
     sceneModePicker: false,
+    // baseLayerPicker: false,
     mapMode2D: Cesium.MapMode2D.ROTATE,
     navigationInstructionsInitiallyVisible: false,
 });
 
 viewer.scene.debugShowFramesPerSecond = true;
-viewer.scene.skyBox.show = false;
-viewer.scene.sun.show = false;
-viewer.scene.moon.show = false;
-viewer.scene.skyAtmosphere.show = false;
-viewer.scene.globe.enableLighting = false;
-viewer.scene.globe.baseColor = Cesium.Color.BLACK;
-viewer.scene.globe.showWaterEffect = false;
-viewer.scene.fog.enabled = false;
+// viewer.scene.skyBox.show = false;
+// viewer.scene.sun.show = false;
+// viewer.scene.moon.show = false;
+// viewer.scene.skyAtmosphere.show = false;
 
-// 初期表示位置
-viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(134.366, 35.451, 1200),
-    orientation: {
-        pitch: -0.5,
-    },
-    navigationHelpButton: false,
-});
+// viewer.scene.fog.enabled = false;
+// viewer.scene.globe.showWaterEffect = false;
+// viewer.scene.globe.depthTestAgainstTerrain = true;
+// viewer.scene.globe.backFaceCulling = false;
+// viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 
 // 微地形表現図を表示
 viewer.scene.imageryLayers.addImageryProvider(
@@ -68,7 +65,7 @@ const getPositionsHeight = async (positions) => {
 };
 
 // czmlへの変換処理
-const set3dData = async (url, trunkColor, trunkoutlineColor) => {
+const set3dData = async (url, trunkColor) => {
     // geojsonファイルの取得
     const geojsonData = await getData(url);
 
@@ -146,11 +143,11 @@ const set3dData = async (url, trunkColor, trunkoutlineColor) => {
                 topRadius: 0,
                 bottomRadius: canopyProjectedArea / Math.PI,
                 slices: 6,
-                numberOfVerticalLines: 3,
+                numberOfVerticalLines: 6,
                 outline: true,
                 outlineWidth: 0.5,
                 outlineColor: {
-                    rgba: [255, 255, 255, 250],
+                    rgba: [255, 255, 255, 150],
                 },
 
                 material: {
@@ -172,9 +169,14 @@ const set3dData = async (url, trunkColor, trunkoutlineColor) => {
     viewer.zoomTo(dataSourcePromise);
 };
 
-set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250], [255, 255, 255, 100]);
-set3dData('sugi_fix.geojson', [0, 100, 0, 250], [255, 255, 255, 100]);
-set3dData('matsu_fix.geojson', [20, 200, 160, 250], [255, 255, 255, 100]);
+set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250]);
+set3dData('matsu_fix.geojson', [20, 200, 160, 250]);
+set3dData('sugi1.geojson', [0, 100, 0, 250]);
+set3dData('sugi2.geojson', [0, 100, 0, 250]);
+set3dData('sugi3.geojson', [0, 100, 0, 250]);
+set3dData('sugi4.geojson', [0, 100, 0, 250]);
+set3dData('sugi5.geojson', [0, 100, 0, 250]);
+set3dData('sugi6.geojson', [0, 100, 0, 250]);
 
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('sugi.json'), {});
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('mastu.json'), {});
