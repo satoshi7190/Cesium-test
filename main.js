@@ -39,17 +39,16 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     maximumRenderTimeChange: Infinity,
     navigationInstructionsInitiallyVisible: false,
 });
-
 viewer.scene.debugShowFramesPerSecond = true;
-// viewer.scene.skyBox.show = false;
-// viewer.scene.sun.show = false;
-// viewer.scene.moon.show = false;
-// viewer.scene.skyAtmosphere.show = false;
+viewer.scene.skyBox.show = false;
+viewer.scene.sun.show = false;
+viewer.scene.moon.show = false;
+viewer.scene.skyAtmosphere.show = false;
 viewer.scene.fog.enabled = false;
 viewer.scene.globe.showWaterEffect = false;
 viewer.scene.globe.depthTestAgainstTerrain = true;
 viewer.scene.globe.backFaceCulling = false;
-// viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
+viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 
 // 微地形表現図を表示
 viewer.scene.imageryLayers.addImageryProvider(
@@ -92,7 +91,7 @@ const set3dData = async (url) => {
     // 立木の3Dオブジェクトの作成
     const czmlData = [];
     geojsonData.forEach((feature, i) => {
-        // if (i > 5000) {
+        // if (i > 20000) {
         //     return;
         // }
         // 経度
@@ -163,8 +162,8 @@ const set3dData = async (url) => {
                 length: treeCrownLength,
                 topRadius: 0,
                 bottomRadius: canopyProjectedArea / Math.PI,
-                slices: 9,
-                numberOfVerticalLines: 9,
+                slices: 8,
+                numberOfVerticalLines: 8,
                 outline: true,
                 outlineWidth: 0.5,
                 outlineColor: {
