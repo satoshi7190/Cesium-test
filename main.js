@@ -4,11 +4,24 @@ Cesium.Ion.defaultAccessToken =
 
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
-// Cesium.Camera.DEFAULT_OFFSET = Cesium.HeadingPitchRange(0, -5, 9);
+// Cesium.Camera.DEFAULT_VIEW_OFFSET = new Cesium.HeadingPitchRange(6.0, 4.0, 0.0);
+
+//
+const createDescriptionHtml = function (item) {
+    let contentHtml = `<table class="cesium-infoBox-defaultTable"><tbody>`;
+    for (let pro in item) {
+        if (pro == 'positions') continue;
+        contentHtml += '<tr><th>' + `${pro}` + '</th>' + '<td>' + `${item[pro]}` + '</td>' + '</tr>';
+    }
+    contentHtml += '</tbody></table>';
+    return contentHtml;
+};
+
 // Viewerを表示、地形の読み込み、不要なボタン等はオフに
 const viewer = new Cesium.Viewer('cesiumContainer', {
     // 地形の読み込み
     terrainProvider: Cesium.createWorldTerrain(),
+
     // 不要なボタン等はオフに
     timeline: false,
     animation: false,
@@ -17,20 +30,21 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     geocoder: false,
     sceneModePicker: false,
     navigationHelpButton: false,
-    infoBox: false,
-    selectionIndicator: false,
+    // infoBox: false,
+    // selectionIndicator: false,
     shadows: false,
     shouldAnimate: false,
     requestRenderMode: true,
-    maximumRenderTimeChange: Infinity,
     fullscreenButton: false,
     sceneModePicker: false,
+    // maximumRenderTimeChange: Infinity,
     // baseLayerPicker: false,
-    mapMode2D: Cesium.MapMode2D.ROTATE,
+    // mapMode2D: Cesium.MapMode2D.ROTATE,
     navigationInstructionsInitiallyVisible: false,
 });
 
 viewer.scene.debugShowFramesPerSecond = true;
+
 // viewer.scene.skyBox.show = false;
 // viewer.scene.sun.show = false;
 // viewer.scene.moon.show = false;
@@ -51,10 +65,17 @@ viewer.scene.imageryLayers.addImageryProvider(
 );
 
 // geojsonデータの取得
+// const getData = async (url) => {
+//     const response = await window.fetch(url);
+//     const featuresData = await response.json();
+//     console.log(featuresData);
+//     return featuresData.features;
+// };
+
 const getData = async (url) => {
     const response = await window.fetch(url);
     const featuresData = await response.json();
-    return featuresData.features;
+    return featuresData.objects.樹頂点データ.geometries;
 };
 
 // 経緯度から楕円体高を求める
@@ -65,7 +86,7 @@ const getPositionsHeight = async (positions) => {
 };
 
 // czmlへの変換処理
-const set3dData = async (url, trunkColor) => {
+const set3dData = async (url) => {
     // geojsonファイルの取得
     const geojsonData = await getData(url);
 
@@ -73,9 +94,9 @@ const set3dData = async (url, trunkColor) => {
     const positions = [];
     geojsonData.forEach((feature) => {
         // 経度
-        const longitude = feature.geometry.coordinates[0];
+        const longitude = feature.coordinates[0];
         // 緯度
-        const latitude = feature.geometry.coordinates[1];
+        const latitude = feature.coordinates[1];
         // 経緯度から楕円体高を取得
         positions.push(Cesium.Cartographic.fromDegrees(longitude, latitude));
     });
@@ -91,9 +112,9 @@ const set3dData = async (url, trunkColor) => {
     ];
     geojsonData.forEach((feature, i) => {
         // 経度
-        const longitude = feature.geometry.coordinates[0];
+        const longitude = feature.coordinates[0];
         // 緯度
-        const latitude = feature.geometry.coordinates[1];
+        const latitude = feature.coordinates[1];
         // 樹高 (先端が出ないように少し低めに)
         const treeHeight = feature.properties.樹高 - feature.properties.樹冠長;
         // 樹冠長
@@ -111,16 +132,34 @@ const set3dData = async (url, trunkColor) => {
         // 樹冠の高さの位置
         const crownPositionZ = ellipsoidalHeight + trunkHeight + treeCrownLength / 2;
 
+
+
+        switch (feature.properties.中樹種) {
+            case 'スギ':
+                trunkColor = [0, 100, 0, 250];
+                break;
+            case 'ヒノキ類':
+                trunkColor = [0, 200, 40, 250];
+                break;
+            case 'マツ類':
+                trunkColor = [20, 200, 160, 250];
+                break;
+            default:
+                trunkColor = [0, 0, 0, 0];
+        }
+
         // 幹
         const crown3D = {
             id: feature.properties.中樹種 + '幹' + String(i),
             position: {
                 cartographicDegrees: [longitude, latitude, trunkPositionZ],
             },
+            description: createDescriptionHtml(feature.properties),
             cylinder: {
+                show: false,
                 length: treeHeight,
-                topRadius: dbh / 100,
-                bottomRadius: dbh / 100,
+                topRadius: dbh / 50,
+                bottomRadius: dbh / 50,
                 slices: 6,
                 material: {
                     solidColor: {
@@ -138,16 +177,18 @@ const set3dData = async (url, trunkColor) => {
             position: {
                 cartographicDegrees: [longitude, latitude, crownPositionZ],
             },
+            description: createDescriptionHtml(feature.properties),
             cylinder: {
+                show: false,
                 length: treeCrownLength,
                 topRadius: 0,
                 bottomRadius: canopyProjectedArea / Math.PI,
-                slices: 6,
-                numberOfVerticalLines: 6,
+                slices: 9,
+                numberOfVerticalLines: 9,
                 outline: true,
                 outlineWidth: 0.5,
                 outlineColor: {
-                    rgba: [255, 255, 255, 150],
+                    rgba: [255, 255, 255, 180],
                 },
 
                 material: {
@@ -164,21 +205,43 @@ const set3dData = async (url, trunkColor) => {
     });
 
     // Cesiumに表示
-    const dataSourcePromise = new Cesium.CzmlDataSource({ credit: '鳥取県オープンデータカタログサイト' }).load(czmlData);
+    const dataSource = new Cesium.CzmlDataSource();
+    const dataSourcePromise = dataSource.load(czmlData);
     viewer.dataSources.add(dataSourcePromise);
-    viewer.zoomTo(dataSourcePromise);
+
+    dataSourcePromise.then(function (d) {
+        Object.keys(d.entities._entities._hash).forEach(function (key, i) {
+            // console.log(d.entities._entities._hash[key].show);
+
+            requestIdleCallback(() => {
+                d.entities._entities._hash[key].cylinder.show = true;
+            });
+        });
+    });
+
+    // viewer.zoomTo(dataSourcePromise);
 };
 
-set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250]);
-set3dData('matsu_fix.geojson', [20, 200, 160, 250]);
-set3dData('sugi1.geojson', [0, 100, 0, 250]);
-set3dData('sugi2.geojson', [0, 100, 0, 250]);
-set3dData('sugi3.geojson', [0, 100, 0, 250]);
-set3dData('sugi4.geojson', [0, 100, 0, 250]);
-set3dData('sugi5.geojson', [0, 100, 0, 250]);
-set3dData('sugi6.geojson', [0, 100, 0, 250]);
+// set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250]);
+// set3dData('matsu_fix.geojson', [20, 200, 160, 250]);
+
+// const setArry = ['sugi2.geojson', 'sugi3.geojson', 'sugi4.geojson', 'sugi5.geojson', 'sugi6.geojson'];
+set3dData('樹頂点データ.topojson');
+// set3dData('樹頂点データ.geojson');
+// set3dData('sugi2.geojson', [0, 100, 0, 250]);
+// set3dData('sugi3.geojson', [0, 100, 0, 250]);
+// set3dData('sugi4.geojson', [0, 100, 0, 250]);
+// set3dData('sugi5.geojson', [0, 100, 0, 250]);
+// set3dData('sugi6.geojson', [0, 100, 0, 250]);
 
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('sugi.json'), {});
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('mastu.json'), {});
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('hinoki.json'), {});
 // viewer.dataSources.add(Cesium.CzmlDataSource.load('mix.json'), {});
+
+// viewer.camera.moveStart.addEventListener(function () {
+//     console.log(222);
+// });
+// viewer.camera.moveEnd.addEventListener(function () {
+//     console.log(333);
+// });
