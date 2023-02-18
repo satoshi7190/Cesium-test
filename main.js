@@ -18,17 +18,6 @@ const createDescriptionHtml = (items) => {
 const viewer = new Cesium.Viewer('cesiumContainer', {
     contextOptions: {
         requestWebgl: true,
-        // webgl: {
-        //     alpha: true,
-        //     depth: true,
-        //     stencil: false,
-        //     antialias: true,
-        //     premultipliedAlpha: true,
-        //     preserveDrawingBuffer: false,
-        //     powerPreference: 'default',
-        //     failIfMajorPerformanceCaveat: false,
-        //     desynchronized: false,
-        // },
     },
     // 地形の読み込み
     terrainProvider: Cesium.createWorldTerrain(),
@@ -45,10 +34,9 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     shouldAnimate: false,
     fullscreenButton: false,
     sceneModePicker: false,
-
     scene3DOnly: true,
     requestRenderMode: true,
-    // maximumRenderTimeChange: Infinity,
+    maximumRenderTimeChange: Infinity,
     navigationInstructionsInitiallyVisible: false,
 });
 
@@ -102,15 +90,9 @@ const set3dData = async (url) => {
     const positionsEllipsoidal = await getPositionsHeight(positions);
 
     // 立木の3Dオブジェクトの作成
-    const czmlData = [
-        {
-            id: 'document',
-            name: 'CZML Geometries: Cylinder',
-            version: '1.0',
-        },
-    ];
+    const czmlData = [];
     geojsonData.forEach((feature, i) => {
-        // if (i > 5) {
+        // if (i > 5000) {
         //     return;
         // }
         // 経度
@@ -156,7 +138,6 @@ const set3dData = async (url) => {
             },
             description: createDescriptionHtml(feature.properties),
             cylinder: {
-                show: false,
                 length: treeHeight,
                 topRadius: dbh / 100,
                 bottomRadius: dbh / 100,
@@ -179,7 +160,6 @@ const set3dData = async (url) => {
             },
             description: createDescriptionHtml(feature.properties),
             cylinder: {
-                show: false,
                 length: treeCrownLength,
                 topRadius: 0,
                 bottomRadius: canopyProjectedArea / Math.PI,
@@ -204,43 +184,32 @@ const set3dData = async (url) => {
         czmlData.push(crown3D);
     });
 
-    // Cesiumに表示
-    const dataSource = new Cesium.CzmlDataSource();
-    const dataSourcePromise = dataSource.load(czmlData);
-    viewer.dataSources.add(dataSourcePromise);
+    const sliceByNumber = (array, number) => {
+        const length = Math.ceil(array.length / number);
+        return new Array(length).fill().map((_, i) => array.slice(i * number, (i + 1) * number));
+    };
 
-    // 読み込まれたら順番にジオメトリを表示する
-    dataSourcePromise.then((data) => {
-        Object.keys(data.entities._entities._hash).forEach((key) => {
-            requestIdleCallback(() => {
-                data.entities._entities._hash[key].cylinder.show = true;
-            });
-        });
-    });
+    const bbb = sliceByNumber(czmlData, 3000);
+    let i = 0;
+    const test = () => {
+        const czmlDataTop = [
+            {
+                id: 'document',
+                name: 'CZML Geometries: Cylinder',
+                version: '1.0',
+            },
+        ];
+        czmlDataTop.push(...bbb[i]);
+        const dataSource = new Cesium.CzmlDataSource();
+        const dataSourcePromise = dataSource.load(czmlDataTop);
+        viewer.dataSources.add(dataSourcePromise);
+        i += 1;
+        if (i <= bbb.length) {
+            dataSourcePromise.then(() => test());
+        }
+    };
 
-    viewer.zoomTo(dataSourcePromise);
+    test();
 };
 
-// set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250]);
-// set3dData('matsu_fix.geojson', [20, 200, 160, 250]);
-
-// const setArry = ['sugi2.geojson', 'sugi3.geojson', 'sugi4.geojson', 'sugi5.geojson', 'sugi6.geojson'];
 set3dData('樹頂点データ.topojson');
-// set3dData('樹頂点データ.geojson');
-// set3dData('sugi2.geojson', [0, 100, 0, 250]);
-// set3dData('sugi3.geojson', [0, 100, 0, 250]);
-// set3dData('sugi4.geojson', [0, 100, 0, 250]);
-// set3dData('sugi5.geojson', [0, 100, 0, 250]);
-// set3dData('sugi6.geojson', [0, 100, 0, 250]);
-
-// viewer.dataSources.add(Cesium.CzmlDataSource.load('sugi.json'), {});
-// viewer.dataSources.add(Cesium.CzmlDataSource.load('mastu.json'), {});
-// viewer.dataSources.add(Cesium.CzmlDataSource.load('hinoki.json'), {});
-// viewer.dataSources.add(Cesium.CzmlDataSource.load('mix.json'), {});
-
-// viewer.camera.moveStart.addEventListener(function () {
-//     console.log(222);
-// });
-// viewer.camera.moveEnd.addEventListener(function () {
-//     console.log(333);
-// });
