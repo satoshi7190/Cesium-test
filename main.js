@@ -4,14 +4,11 @@ Cesium.Ion.defaultAccessToken =
 
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
-// Cesium.Camera.DEFAULT_VIEW_OFFSET = new Cesium.HeadingPitchRange(6.0, 4.0, 0.0);
 
-//
-const createDescriptionHtml = function (item) {
+const createDescriptionHtml = (items) => {
     let contentHtml = `<table class="cesium-infoBox-defaultTable"><tbody>`;
-    for (let pro in item) {
-        if (pro == 'positions') continue;
-        contentHtml += '<tr><th>' + `${pro}` + '</th>' + '<td>' + `${item[pro]}` + '</td>' + '</tr>';
+    for (let item in items) {
+        contentHtml += '<tr><th>' + `${item}` + '</th>' + '<td>' + `${items[item]}` + '</td>' + '</tr>';
     }
     contentHtml += '</tbody></table>';
     return contentHtml;
@@ -43,13 +40,11 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     navigationInstructionsInitiallyVisible: false,
 });
 
-viewer.scene.debugShowFramesPerSecond = true;
-
+// viewer.scene.debugShowFramesPerSecond = true;
 // viewer.scene.skyBox.show = false;
 // viewer.scene.sun.show = false;
 // viewer.scene.moon.show = false;
 // viewer.scene.skyAtmosphere.show = false;
-
 // viewer.scene.fog.enabled = false;
 // viewer.scene.globe.showWaterEffect = false;
 // viewer.scene.globe.depthTestAgainstTerrain = true;
@@ -63,14 +58,6 @@ viewer.scene.imageryLayers.addImageryProvider(
         rectangle: Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003),
     }),
 );
-
-// geojsonデータの取得
-// const getData = async (url) => {
-//     const response = await window.fetch(url);
-//     const featuresData = await response.json();
-//     console.log(featuresData);
-//     return featuresData.features;
-// };
 
 const getData = async (url) => {
     const response = await window.fetch(url);
@@ -132,8 +119,6 @@ const set3dData = async (url) => {
         // 樹冠の高さの位置
         const crownPositionZ = ellipsoidalHeight + trunkHeight + treeCrownLength / 2;
 
-
-
         switch (feature.properties.中樹種) {
             case 'スギ':
                 trunkColor = [0, 100, 0, 250];
@@ -150,7 +135,7 @@ const set3dData = async (url) => {
 
         // 幹
         const crown3D = {
-            id: feature.properties.中樹種 + '幹' + String(i),
+            id: '幹 ' + String(i),
             position: {
                 cartographicDegrees: [longitude, latitude, trunkPositionZ],
             },
@@ -164,7 +149,7 @@ const set3dData = async (url) => {
                 material: {
                     solidColor: {
                         color: {
-                            rgba: [255, 154, 39, 200],
+                            rgba: [255, 154, 39, 250],
                         },
                     },
                 },
@@ -173,7 +158,7 @@ const set3dData = async (url) => {
 
         // 樹冠
         const trunk3D = {
-            id: feature.properties.中樹種 + '樹冠' + String(i),
+            id: '樹冠 ' + String(i),
             position: {
                 cartographicDegrees: [longitude, latitude, crownPositionZ],
             },
