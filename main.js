@@ -16,6 +16,20 @@ const createDescriptionHtml = (items) => {
 
 // Viewerを表示、地形の読み込み、不要なボタン等はオフに
 const viewer = new Cesium.Viewer('cesiumContainer', {
+    contextOptions: {
+        requestWebgl: true,
+        // webgl: {
+        //     alpha: true,
+        //     depth: true,
+        //     stencil: false,
+        //     antialias: true,
+        //     premultipliedAlpha: true,
+        //     preserveDrawingBuffer: false,
+        //     powerPreference: 'default',
+        //     failIfMajorPerformanceCaveat: false,
+        //     desynchronized: false,
+        // },
+    },
     // 地形の読み込み
     terrainProvider: Cesium.createWorldTerrain(),
 
@@ -27,28 +41,26 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     geocoder: false,
     sceneModePicker: false,
     navigationHelpButton: false,
-    // infoBox: false,
-    // selectionIndicator: false,
     shadows: false,
     shouldAnimate: false,
-    requestRenderMode: true,
     fullscreenButton: false,
     sceneModePicker: false,
+
+    scene3DOnly: true,
+    requestRenderMode: true,
     // maximumRenderTimeChange: Infinity,
-    // baseLayerPicker: false,
-    // mapMode2D: Cesium.MapMode2D.ROTATE,
     navigationInstructionsInitiallyVisible: false,
 });
 
-// viewer.scene.debugShowFramesPerSecond = true;
+viewer.scene.debugShowFramesPerSecond = true;
 // viewer.scene.skyBox.show = false;
 // viewer.scene.sun.show = false;
 // viewer.scene.moon.show = false;
 // viewer.scene.skyAtmosphere.show = false;
-// viewer.scene.fog.enabled = false;
-// viewer.scene.globe.showWaterEffect = false;
-// viewer.scene.globe.depthTestAgainstTerrain = true;
-// viewer.scene.globe.backFaceCulling = false;
+viewer.scene.fog.enabled = false;
+viewer.scene.globe.showWaterEffect = false;
+viewer.scene.globe.depthTestAgainstTerrain = true;
+viewer.scene.globe.backFaceCulling = false;
 // viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 
 // 微地形表現図を表示
@@ -98,6 +110,9 @@ const set3dData = async (url) => {
         },
     ];
     geojsonData.forEach((feature, i) => {
+        // if (i > 5) {
+        //     return;
+        // }
         // 経度
         const longitude = feature.coordinates[0];
         // 緯度
@@ -143,8 +158,8 @@ const set3dData = async (url) => {
             cylinder: {
                 show: false,
                 length: treeHeight,
-                topRadius: dbh / 50,
-                bottomRadius: dbh / 50,
+                topRadius: dbh / 100,
+                bottomRadius: dbh / 100,
                 slices: 6,
                 material: {
                     solidColor: {
@@ -194,17 +209,16 @@ const set3dData = async (url) => {
     const dataSourcePromise = dataSource.load(czmlData);
     viewer.dataSources.add(dataSourcePromise);
 
-    dataSourcePromise.then(function (d) {
-        Object.keys(d.entities._entities._hash).forEach(function (key, i) {
-            // console.log(d.entities._entities._hash[key].show);
-
+    // 読み込まれたら順番にジオメトリを表示する
+    dataSourcePromise.then((data) => {
+        Object.keys(data.entities._entities._hash).forEach((key) => {
             requestIdleCallback(() => {
-                d.entities._entities._hash[key].cylinder.show = true;
+                data.entities._entities._hash[key].cylinder.show = true;
             });
         });
     });
 
-    // viewer.zoomTo(dataSourcePromise);
+    viewer.zoomTo(dataSourcePromise);
 };
 
 // set3dData('ヒノキ_樹頂点_05LE904.geojson', [0, 200, 40, 250]);
