@@ -7,9 +7,9 @@ Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
 
 // Viewerを表示、地形の読み込み、不要なボタン等はオフに
 const viewer = new Cesium.Viewer('cesiumContainer', {
-    // contextOptions: {
-    //     requestWebgl: true,
-    // },
+    contextOptions: {
+        requestWebgl: true,
+    },
     // 地形の読み込み
     terrainProvider: Cesium.createWorldTerrain(),
 
@@ -27,18 +27,18 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     sceneModePicker: false,
     scene3DOnly: true,
     requestRenderMode: true,
-    maximumRenderTimeChange: Infinity,
+    // maximumRenderTimeChange: Infinity,
     navigationInstructionsInitiallyVisible: false,
 });
 viewer.scene.debugShowFramesPerSecond = true;
 // viewer.scene.skyBox.show = false;
-// viewer.scene.sun.show = false;
-// viewer.scene.moon.show = false;
+viewer.scene.sun.show = false;
+viewer.scene.moon.show = false;
 // viewer.scene.skyAtmosphere.show = false;
 // viewer.scene.fog.enabled = false;
-// viewer.scene.globe.showWaterEffect = false;
-// viewer.scene.globe.depthTestAgainstTerrain = true;
-// viewer.scene.globe.backFaceCulling = false;
+viewer.scene.globe.showWaterEffect = false;
+viewer.scene.globe.depthTestAgainstTerrain = true;
+viewer.scene.globe.backFaceCulling = false;
 // viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 
 // 微地形表現図を表示
@@ -150,7 +150,7 @@ const set3dData = async (url) => {
             length: treeCrownLength,
             topRadius: 0,
             bottomRadius: canopyProjectedArea / Math.PI,
-            slices: 9,
+            slices: 8,
         });
 
         const trunkMatrix = Cesium.Matrix4.multiplyByTranslation(
@@ -176,7 +176,8 @@ const set3dData = async (url) => {
             return;
         }
 
-        const outlineGeometry = new Cesium.GeometryPipeline.toWireframe(Cesium.CylinderGeometry.createGeometry(trunkGeometry));
+        const outlineGeometryorizin = new Cesium.GeometryPipeline.toWireframe(Cesium.CylinderGeometry.createGeometry(trunkGeometry));
+        const outlineGeometry = new Cesium.GeometryPipeline.compressVertices(outlineGeometryorizin);
 
         const outline3D = new Cesium.GeometryInstance({
             geometry: outlineGeometry,
@@ -195,11 +196,14 @@ const set3dData = async (url) => {
         new Cesium.Primitive({
             geometryInstances: treeInstance,
             appearance: new Cesium.PerInstanceColorAppearance({
-                translucent: true,
-                closed: true,
+                // translucent: false,
+                // closed: true,
             }),
-            flat: true,
+            // flat: true,
+            vertexCacheOptimize: true,
             compressVertices: true,
+            debugShowBoundingVolume: true,
+            interleave: true,
         }),
     );
 
@@ -207,11 +211,15 @@ const set3dData = async (url) => {
         new Cesium.Primitive({
             geometryInstances: outlineInstance,
             appearance: new Cesium.PerInstanceColorAppearance({
-                // translucent: true,
+                // translucent: false,
                 // closed: true,
             }),
-            flat: true,
+            // flat: true,
+            vertexCacheOptimize: true,
             compressVertices: true,
+            interleave: true,
+            allowPicking: false,
+            appearance: new Cesium.PerInstanceColorAppearance({}),
         }),
     );
 };
