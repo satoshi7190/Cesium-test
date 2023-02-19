@@ -16,9 +16,9 @@ const createDescriptionHtml = (items) => {
 
 // Viewerを表示、地形の読み込み、不要なボタン等はオフに
 const viewer = new Cesium.Viewer('cesiumContainer', {
-    contextOptions: {
-        requestWebgl: true,
-    },
+    // contextOptions: {
+    //     requestWebgl: true,
+    // },
     // 地形の読み込み
     terrainProvider: Cesium.createWorldTerrain(),
 
@@ -39,7 +39,7 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     maximumRenderTimeChange: Infinity,
     navigationInstructionsInitiallyVisible: false,
 });
-// viewer.scene.debugShowFramesPerSecond = true;
+viewer.scene.debugShowFramesPerSecond = true;
 // viewer.scene.skyBox.show = false;
 // viewer.scene.sun.show = false;
 // viewer.scene.moon.show = false;
@@ -185,9 +185,11 @@ const set3dData = async (url) => {
         new Cesium.Primitive({
             geometryInstances: arr,
             appearance: new Cesium.PerInstanceColorAppearance({
-                translucent: false,
-                closed: true,
+                translucent: true,
+                closed: false,
             }),
+            debugShowBoundingVolume: true,
+            compressVertices: true,
         }),
     );
 };
