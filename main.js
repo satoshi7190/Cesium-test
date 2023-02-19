@@ -48,7 +48,7 @@ viewer.scene.fog.enabled = false;
 viewer.scene.globe.showWaterEffect = false;
 viewer.scene.globe.depthTestAgainstTerrain = true;
 viewer.scene.globe.backFaceCulling = false;
-viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
+// viewer.scene.globe.cartographicLimitRectangle = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 
 // 微地形表現図を表示
 viewer.scene.imageryLayers.addImageryProvider(
@@ -169,7 +169,6 @@ const set3dData = async (url) => {
                 outlineColor: {
                     rgba: [255, 255, 255, 180],
                 },
-
                 material: {
                     solidColor: {
                         color: {
@@ -205,10 +204,20 @@ const set3dData = async (url) => {
         i += 1;
         if (i <= bbb.length) {
             dataSourcePromise.then(() => test());
+            // requestIdleCallback(() => dataSourcePromise.then(() => test()));
         }
     };
 
     test();
+    // alert(77);
+    // viewer.camera.flyTo({
+    //     destination: Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003),
+    //     orientation: {
+    //         // heading: 1,
+    //         // pitch: 0,
+    //     },
+    //     duration: 5,
+    // });
 };
 
 set3dData('樹頂点データ.topojson');
