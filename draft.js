@@ -5,15 +5,6 @@ Cesium.Ion.defaultAccessToken =
 Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003);
 Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
 
-const createDescriptionHtml = (items) => {
-    let contentHtml = `<table class="cesium-infoBox-defaultTable"><tbody>`;
-    for (let item in items) {
-        contentHtml += '<tr><th>' + `${item}` + '</th>' + '<td>' + `${items[item]}` + '</td>' + '</tr>';
-    }
-    contentHtml += '</tbody></table>';
-    return contentHtml;
-};
-
 // Viewerを表示、地形の読み込み、不要なボタン等はオフに
 const viewer = new Cesium.Viewer('cesiumContainer', {
     // contextOptions: {
@@ -30,8 +21,8 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     geocoder: false,
     sceneModePicker: false,
     navigationHelpButton: false,
-    // shadows: false,
-    // shouldAnimate: false,
+    shadows: false,
+    shouldAnimate: false,
     fullscreenButton: false,
     sceneModePicker: false,
     scene3DOnly: true,
@@ -71,7 +62,7 @@ const getPositionsHeight = async (positions) => {
     return promise;
 };
 
-// czmlへの変換処理
+// 変換処理
 const set3dData = async (url) => {
     // geojsonファイルの取得
     const geojsonData = await getData(url);
@@ -89,9 +80,10 @@ const set3dData = async (url) => {
     const positionsEllipsoidal = await getPositionsHeight(positions);
 
     // 立木の3Dオブジェクトの作成
-    const arr = [];
+    const treeInstance = [];
+    const outlineInstance = [];
     geojsonData.forEach((feature, i) => {
-        // if (i > 200) {
+        // if (i > 500) {
         //     return;
         // }
 
@@ -177,18 +169,48 @@ const set3dData = async (url) => {
             },
         });
 
-        arr.push(trunk3D);
-        arr.push(crown3D);
+        treeInstance.push(crown3D);
+        treeInstance.push(trunk3D);
+
+        if (feature.properties.樹冠体積 <= 0.1) {
+            return;
+        }
+
+        const outlineGeometry = new Cesium.GeometryPipeline.toWireframe(Cesium.CylinderGeometry.createGeometry(trunkGeometry));
+
+        const outline3D = new Cesium.GeometryInstance({
+            geometry: outlineGeometry,
+            modelMatrix: trunkMatrix,
+            id: 'line' + String(i),
+            attributes: {
+                color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(255, 255, 255, 80)),
+                show: new Cesium.ShowGeometryInstanceAttribute(true),
+            },
+        });
+
+        outlineInstance.push(outline3D);
     });
 
     viewer.scene.primitives.add(
         new Cesium.Primitive({
-            geometryInstances: arr,
+            geometryInstances: treeInstance,
             appearance: new Cesium.PerInstanceColorAppearance({
                 translucent: true,
-                closed: false,
+                closed: true,
             }),
-            debugShowBoundingVolume: true,
+            flat: true,
+            compressVertices: true,
+        }),
+    );
+
+    viewer.scene.primitives.add(
+        new Cesium.Primitive({
+            geometryInstances: outlineInstance,
+            appearance: new Cesium.PerInstanceColorAppearance({
+                // translucent: true,
+                // closed: true,
+            }),
+            flat: true,
             compressVertices: true,
         }),
     );
@@ -196,75 +218,11 @@ const set3dData = async (url) => {
 
 set3dData('樹頂点データ.topojson');
 
-// const redCone = viewer.entities.add({
-//     name: 'Red cone',
-//     position: Cesium.Cartesian3.fromDegrees(-105.0, 40.0, 200000.0),
-//     cylinder: {
-//         length: 400000.0,
-//         topRadius: 0.0,
-//         bottomRadius: 200000.0,
-//         material: Cesium.Color.RED,
-//     },
-// });
-
-// const rectangleInstance = new Cesium.GeometryInstance({
-//     geometry: new Cesium.RectangleGeometry({
-//         rectangle: Cesium.Rectangle.fromDegrees(-140.0, 30.0, -100.0, 40.0),
-//         vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
-//     }),
-//     id: 'rectangle',
-//     attributes: {
-//         color: new Cesium.ColorGeometryInstanceAttribute(0.0, 1.0, 1.0, 0.5),
-//     },
-// });
-// const ellipsoidInstance = new Cesium.GeometryInstance({
-//     geometry: new Cesium.EllipsoidGeometry({
-//         radii: new Cesium.Cartesian3(500000.0, 500000.0, 1000000.0),
-//         vertexFormat: Cesium.VertexFormat.POSITION_AND_NORMAL,
-//     }),
-//     modelMatrix: Cesium.Matrix4.multiplyByTranslation(
-//         Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(-95.59777, 40.03883)),
-//         new Cesium.Cartesian3(0.0, 0.0, 500000.0),
-//         new Cesium.Matrix4(),
-//     ),
-//     id: 'ellipsoid',
-//     attributes: {
-//         color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.AQUA),
-//     },
-// });
-
-// viewer.scene.primitives.add(
-//     new Cesium.Primitive({
-//         geometryInstances: [rectangleInstance, ellipsoidInstance, instances],
-//         appearance: new Cesium.MaterialAppearance({
-//             material: new Cesium.Material({
-//                 // fabric: {
-//                 //     type: 'Color',
-//                 //     uniforms: {
-//                 //         color: new Cesium.Color(1.0, 0, 0, 1.0),
-//                 //     },
-//                 // },
-//             }),
-//             faceForward: true,
-//         }),
-//         // allowPicking: false,
-//         interleave: true,
-//         releaseGeometryInstances: true,
-//     }),
-// );
-
-// viewer.scene.primitives.add(
-//     new Cesium.Primitive({
-//         geometryInstances: instance,
-//         appearance: new Cesium.PerInstanceColorAppearance(),
-//     }),
-// );
-
-const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-handler.setInputAction((movement) => {
-    const pick = viewer.scene.pick(movement.position);
-    if (Cesium.defined(pick) && pick.id === 'my rectangle') {
-        console.log('Mouse clicked rectangle.');
-    }
-    console.log(Cesium.defined(pick) && pick.id);
-}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+// const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+// handler.setInputAction((movement) => {
+//     const pick = viewer.scene.pick(movement.position);
+//     if (Cesium.defined(pick) && pick.id === 'my rectangle') {
+//         console.log('Mouse clicked rectangle.');
+//     }
+//     console.log(Cesium.defined(pick) && pick.id);
+// }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
