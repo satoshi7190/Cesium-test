@@ -43,7 +43,7 @@ viewer.scene.globe.backFaceCulling = false;
 // 微地形表現図を表示
 viewer.scene.imageryLayers.addImageryProvider(
     new Cesium.SingleTileImageryProvider({
-        url: 'teds.webp',
+        url: 'microtopographic.webp',
         rectangle: Cesium.Rectangle.fromDegrees(134.355368, 35.4591744, 134.3774097, 35.4727003),
     }),
 );
@@ -69,12 +69,8 @@ const set3dData = async (url) => {
     // ポイントの各座標から楕円体高をまとめて取得
     const positions = [];
     jsonData.forEach((f) => {
-        // 経度
-        const longitude = f.X;
-        // 緯度
-        const latitude = f.Y;
         // 経緯度から楕円体高を取得
-        positions.push(Cesium.Cartographic.fromDegrees(longitude, latitude));
+        positions.push(Cesium.Cartographic.fromDegrees(f.X, f.Y));
     });
     const positionsEllipsoidal = await getPositionsHeight(positions);
 
@@ -86,20 +82,13 @@ const set3dData = async (url) => {
         //     return;
         // }
 
-        // 経度
-        const longitude = f.X;
-        // 緯度
-        const latitude = f.Y;
         // 樹高 (先端が出ないように少し低めに)
         const treeHeight = f.H - f.Cl;
         // 樹冠長
         const treeCrownLength = f.Cl;
         // 枝下高
         const trunkHeight = f.H - f.Cl;
-        // 胸高直径
-        const dbh = f.D;
-        // 樹冠投影面積
-        const canopyProjectedArea = f.Ca;
+
         // 楕円体高
         const ellipsoidalHeight = positionsEllipsoidal[i].height;
         // 幹の高さの位置
@@ -123,14 +112,14 @@ const set3dData = async (url) => {
 
         // 幹
         const crownGeometry = new Cesium.CylinderGeometry({
-            length: trunkHeight,
-            topRadius: dbh / 100,
-            bottomRadius: dbh / 100,
+            length: f.H - f.Cl,
+            topRadius: f.D / 2,
+            bottomRadius: f.D / 2,
             slices: 6,
         });
 
         const crownMatrix = Cesium.Matrix4.multiplyByTranslation(
-            Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(longitude, latitude, trunkPositionZ)),
+            Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(f.X, f.Y, trunkPositionZ)),
             new Cesium.Cartesian3(0, 0, 0),
             new Cesium.Matrix4(),
         );
@@ -146,14 +135,14 @@ const set3dData = async (url) => {
         });
         // 樹冠
         const trunkGeometry = new Cesium.CylinderGeometry({
-            length: treeCrownLength,
+            length: f.Cl,
             topRadius: 0,
-            bottomRadius: canopyProjectedArea / Math.PI,
-            slices: 8,
+            bottomRadius: f.Bl,
+            slices: 9,
         });
 
         const trunkMatrix = Cesium.Matrix4.multiplyByTranslation(
-            Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(longitude, latitude, crownPositionZ)),
+            Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(f.X, f.Y, crownPositionZ)),
             new Cesium.Cartesian3(0, 0, 0),
             new Cesium.Matrix4(),
         );
@@ -169,14 +158,14 @@ const set3dData = async (url) => {
         });
 
         const outlineGeometry = new Cesium.CylinderOutlineGeometry({
-            length: treeCrownLength,
+            length: f.Cl,
             topRadius: 0,
-            bottomRadius: canopyProjectedArea / Math.PI,
-            slices: 8,
+            bottomRadius: f.Bl,
+            slices: 9,
         });
 
         const outlineMatrix = Cesium.Matrix4.multiplyByTranslation(
-            Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(longitude, latitude, crownPositionZ)),
+            Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(f.X, f.Y, crownPositionZ)),
             new Cesium.Cartesian3(0, 0, 0),
             new Cesium.Matrix4(),
         );
@@ -193,26 +182,7 @@ const set3dData = async (url) => {
 
         treeInstance.push(crown3D);
         treeInstance.push(trunk3D);
-
-        // if (feature.properties.樹冠体積 <= 0.1) {
-        //     return;
-        // }
-
-        // const outlineGeometryorizin = new Cesium.GeometryPipeline.toWireframe(Cesium.CylinderGeometry.createGeometry(trunkGeometry));
-        // const outlineGeometry = new Cesium.GeometryPipeline.compressVertices(outlineGeometryorizin);
-
-        // const outline3D = new Cesium.GeometryInstance({
-        //     geometry: outlineGeometry,
-        //     modelMatrix: trunkMatrix,
-        //     id: 'line' + String(i),
-        //     attributes: {
-        //         color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(255, 255, 255, 100)),
-        //         show: new Cesium.ShowGeometryInstanceAttribute(true),
-        //     },
-        // });
-
         outlineInstance.push(outline3D);
-        // treeInstance.push(outline3D);
     });
 
     viewer.scene.primitives.add(
@@ -248,13 +218,4 @@ const set3dData = async (url) => {
     );
 };
 
-set3dData('trees_points_minify.json');
-
-// const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-// handler.setInputAction((movement) => {
-//     const pick = viewer.scene.pick(movement.position);
-//     if (Cesium.defined(pick) && pick.id === 'my rectangle') {
-//         console.log('Mouse clicked rectangle.');
-//     }
-//     console.log(Cesium.defined(pick) && pick.id);
-// }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+set3dData('treeTop.json');
