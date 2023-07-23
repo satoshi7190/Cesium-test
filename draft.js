@@ -205,7 +205,7 @@ const createTree = async (url) => {
     viewer.scene.primitives.add(outlinePrimitive);
 };
 
-const jsondata = 'treetop.json'
+const jsondata = 'treeTop.json'
 // 処理の実行
 createTree(jsondata);
 
