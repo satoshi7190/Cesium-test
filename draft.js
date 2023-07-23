@@ -7,11 +7,17 @@ const terrainProvider = Cesium.createWorldTerrain();
 
 // ビューアーを作成
 const viewer = new Cesium.Viewer('cesiumContainer', {
-    contextOptions: {
-        requestWebgl: true,
-    },
     terrainProvider: terrainProvider, // 地形を表示
     scene3DOnly: true, // 3D モードのパフォーマンスを最適化
+});
+
+// カメラの位置セット
+viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(134.358, 35.471, 900.0),
+    orientation: {
+        heading: Cesium.Math.toRadians(130.0),
+        pitch: Cesium.Math.toRadians(-35.0),
+    },
 });
 
 // 微地形表現図を表示
@@ -51,11 +57,9 @@ const createTree = async (url) => {
     const treeInstance = [];
     const outlineInstance = [];
 
-    const labelCollection = new Cesium.LabelCollection();
-
     // オブジェクト生成処理
     jsonData.forEach((data, i) => {
-        // if (i > 10) {
+        // if (i > 50) {
         //     return;
         // }
         // 経度
@@ -111,28 +115,29 @@ const createTree = async (url) => {
                 topRadius: trunkRadius,
                 bottomRadius: trunkRadius,
                 slices: 6,
+                vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
             }),
             modelMatrix: trunkMatrix,
             id: 'trunk' + String(i),
             attributes: {
-                color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(255, 154, 39, 200)),
-                show: new Cesium.ShowGeometryInstanceAttribute(true),
+                color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(255, 154, 39, 255)),
             },
+        });
+        const hoge = new Cesium.CylinderGeometry({
+            length: crownLength,
+            topRadius: 0,
+            bottomRadius: crownRadius,
+            slices: 9,
+            vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
         });
 
         // 樹冠のジオメトリインスタンス：円錐
         const crownGeometryInstance = new Cesium.GeometryInstance({
-            geometry: new Cesium.CylinderGeometry({
-                length: crownLength,
-                topRadius: 0,
-                bottomRadius: crownRadius,
-                slices: 9,
-            }),
+            geometry: hoge,
             modelMatrix: crownMatrix,
             id: 'crown' + String(i),
             attributes: {
-                color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(...crownColor, 200)),
-                show: new Cesium.ShowGeometryInstanceAttribute(true),
+                color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(...crownColor, 255)),
             },
         });
 
@@ -143,12 +148,12 @@ const createTree = async (url) => {
                 topRadius: trunkRadius,
                 bottomRadius: trunkRadius,
                 slices: 6,
+                vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
             }),
             modelMatrix: trunkMatrix,
             id: 'trunkOutline' + String(i),
             attributes: {
                 color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(255, 154, 39, 255)),
-                show: new Cesium.ShowGeometryInstanceAttribute(true),
             },
         });
 
@@ -159,12 +164,12 @@ const createTree = async (url) => {
                 topRadius: 0,
                 bottomRadius: crownRadius,
                 slices: 9,
+                vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
             }),
             modelMatrix: crownMatrix,
             id: 'crownOutline' + String(i),
             attributes: {
                 color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromBytes(...crownColor, 255)),
-                show: new Cesium.ShowGeometryInstanceAttribute(true),
             },
         });
 
@@ -178,44 +183,39 @@ const createTree = async (url) => {
     // プリミティブの作成
     const treePrimitive = new Cesium.Primitive({
         geometryInstances: treeInstance,
-        appearance: new Cesium.PerInstanceColorAppearance(),
+        appearance: new Cesium.PerInstanceColorAppearance({
+            translucent: false,
+            closed: true,
+        }),
+        asynchronous: false,
     });
     const outlinePrimitive = new Cesium.Primitive({
         geometryInstances: outlineInstance,
-        appearance: new Cesium.PerInstanceColorAppearance(),
+        appearance: new Cesium.PerInstanceColorAppearance({
+            translucent: false,
+            closed: true,
+        }),
         allowPicking: false,
         releaseGeometryInstances: false,
+        asynchronous: false,
     });
 
     // プリミティブをシーンに追加
     viewer.scene.primitives.add(treePrimitive);
     viewer.scene.primitives.add(outlinePrimitive);
-
-    // シーンにラベルコレクションを追加
-    viewer.scene.primitives.add(labelCollection);
 };
 
 // 処理の実行
 createTree('treetop.json');
 
-// カメラの位置セット
-viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(134.358, 35.471, 900.0),
-    orientation: {
-        heading: Cesium.Math.toRadians(130.0),
-        pitch: Cesium.Math.toRadians(-35.0),
-    },
-});
-
- // クリックイベント
+// クリックイベント
 viewer.screenSpaceEventHandler.setInputAction(function (click) {
-
     // 最も近いプリミティブを見つける
     const pickedPrimitive = viewer.scene.pick(click.position);
     if (Cesium.defined(pickedPrimitive) && pickedPrimitive.primitive instanceof Cesium.Primitive) {
-
         // クリックしたジオメトリインスタンスのIDのナンバーを取得
         const primitive = pickedPrimitive.primitive;
+        console.log(primitive);
         const attributes = primitive.getGeometryInstanceAttributes(pickedPrimitive.id);
         if (Cesium.defined(attributes)) {
             let targetID;
