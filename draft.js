@@ -1,6 +1,6 @@
 // アクセストークン
 Cesium.Ion.defaultAccessToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZmUyZGRjNy01ODhiLTRlOGMtYmIxMC03YWYwNzIwZjRlOTYiLCJpZCI6OTI1MzgsImlhdCI6MTY3NzA3NTY1N30.otNcG_H9SIbgG-TqH5PXCfqRqiY-g30AeBDInIbzdJI';
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxNGUyMTQyNC1iOTg3LTQyMTctYTlmYi0zOWU1NWMwZDVkZDUiLCJpZCI6OTI1MzgsImlhdCI6MTY5MDA5MDA1M30.15TFa4yJ8zPbHKxPzr_H9KYcGhEFrp7VbkZ7Uz0aWZc';
 
 // 地形データの読み込み;
 const terrainProvider = Cesium.createWorldTerrain();
