@@ -205,8 +205,9 @@ const createTree = async (url) => {
     viewer.scene.primitives.add(outlinePrimitive);
 };
 
+const jsondata ='treetop.json'
 // 処理の実行
-createTree('treetop.json');
+createTree(jsondata);
 
 // クリックイベント
 viewer.screenSpaceEventHandler.setInputAction(function (click) {
